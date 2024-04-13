@@ -1,0 +1,13 @@
+[package]
+name = 'stringrs'
+version = '0.1.0'
+edition = '2021'
+
+[lib]
+crate-type = [ 'staticlib' ]
+name = 'stringrs'
+
+[dependencies]
+extendr-api = '*'
+rayon = "1.10.0"
+regex = "1.10.4"
