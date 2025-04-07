@@ -6,12 +6,12 @@
 # This file was created with the following call:
 #   .Call("wrap__make_stringrs_wrappers", use_symbols = TRUE, package_name = "stringrs")
 
-#' @docType package
+#' @docType _PACKAGE
 #' @usage NULL
 #' @useDynLib stringrs, .registration = TRUE
 NULL
 
-string_detect <- function(s, re) .Call(wrap__string_detect, s, re)
+r_string_detect <- function(s, pattern) .Call(wrap__r_string_detect, s, pattern)
 
 
 # nolint end
