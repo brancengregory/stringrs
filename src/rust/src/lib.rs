@@ -1,7 +1,7 @@
 use extendr_api::prelude::*;
+use fancy_regex::Regex;
 use lazy_static::lazy_static;
 use lru::LruCache;
-use regex::Regex;
 use std::num::NonZeroUsize;
 use std::sync::{Arc, RwLock};
 
@@ -48,7 +48,10 @@ pub fn r_string_detect(s: Robj, pattern: String) -> extendr_api::Result<Logicals
     let results: Vec<Rbool> = s_vec
         .iter()
         .map(|x| {
-            if regex.is_match(x) {
+            if regex
+                .is_match(x)
+                .expect("Couldn't determine whether a regex match was found.")
+            {
                 Rbool::true_value()
             } else {
                 Rbool::false_value()
