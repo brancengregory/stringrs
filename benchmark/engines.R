@@ -115,6 +115,12 @@ run_engine_benchmark <- function(engine, test_data, iterations, workers = NULL) 
   # Get the expression for this engine
   expr <- get_engine_expression(engine)
   
+  # Warm-up iterations to normalize cold-start effects (regex compilation, JIT, cache)
+  # Run 2 warm-up iterations and discard results
+  for (i in 1:2) {
+    invisible(eval(expr, bench_env))
+  }
+  
   # Run benchmark in the local environment
   bench_result <- bench::mark(
     { eval(expr, bench_env) },
@@ -138,13 +144,15 @@ run_engine_benchmark <- function(engine, test_data, iterations, workers = NULL) 
 #' Returns an expression that references 'strings', 'patterns', and 'workers'
 get_engine_expression <- function(engine) {
   switch(engine,
-    # R Base
+    # R Base - using vapply for efficient pre-allocated output
     "grepl" = quote({
       if (length(patterns) == 1) {
         grepl(patterns[1], strings)
       } else {
-        res <- lapply(patterns, function(p) grepl(p, strings))
-        do.call(cbind, res)
+        # Pre-allocate matrix for efficient memory usage
+        res <- vapply(patterns, function(p) grepl(p, strings), logical(length(strings)))
+        colnames(res) <- patterns
+        res
       }
     }),
     
@@ -152,8 +160,10 @@ get_engine_expression <- function(engine) {
       if (length(patterns) == 1) {
         stringr::str_detect(strings, patterns[1])
       } else {
-        res <- lapply(patterns, function(p) stringr::str_detect(strings, p))
-        do.call(cbind, res)
+        # Pre-allocate matrix for efficient memory usage
+        res <- vapply(patterns, function(p) stringr::str_detect(strings, p), logical(length(strings)))
+        colnames(res) <- patterns
+        res
       }
     }),
     
@@ -161,25 +171,29 @@ get_engine_expression <- function(engine) {
       if (length(patterns) == 1) {
         stringi::stri_detect_regex(strings, patterns[1])
       } else {
-        res <- lapply(patterns, function(p) stringi::stri_detect_regex(strings, p))
-        do.call(cbind, res)
+        # Pre-allocate matrix for efficient memory usage
+        res <- vapply(patterns, function(p) stringi::stri_detect_regex(strings, p), logical(length(strings)))
+        colnames(res) <- patterns
+        res
       }
     }),
     
-    # Parallel - mirai
+    # Parallel - mirai (optimized for fairness with real-world patterns)
     "mirai_string" = quote({
       mirai::daemons(workers)
       on.exit(mirai::daemons(0), add = TRUE)
       
       if (length(patterns) == 1) {
         res <- mirai::mirai_map(strings, function(s, p) {
-          grepl(p, s)
+          stringi::stri_detect_regex(s, p)
         }, .args = list(p = patterns[1]))[]
         unlist(res)
       } else {
+        # Use efficient vapply pattern matching per string
         res <- mirai::mirai_map(strings, function(s, patterns) {
-          sapply(patterns, function(p) grepl(p, s))
+          vapply(patterns, function(p) stringi::stri_detect_regex(s, p), logical(1))
         }, .args = list(patterns = patterns))[]
+        # Efficient row binding with pre-allocation
         do.call(rbind, res)
       }
     }),
@@ -188,23 +202,27 @@ get_engine_expression <- function(engine) {
       mirai::daemons(workers)
       on.exit(mirai::daemons(0), add = TRUE)
       
+      # Pattern-parallel: each worker processes one pattern against all strings
       res <- mirai::mirai_map(patterns, function(p, strings) {
-        grepl(p, strings)
+        stringi::stri_detect_regex(strings, p)
       }, .args = list(strings = strings))[]
+      # Efficient column binding with pre-allocation
       do.call(cbind, res)
     }),
     
-    # Parallel - furrr
+    # Parallel - furrr (optimized for fairness with real-world patterns)
     "furrr_string" = quote({
       future::plan(future::multisession, workers = workers)
       on.exit(future::plan(future::sequential), add = TRUE)
       
       if (length(patterns) == 1) {
-        furrr::future_map_lgl(strings, ~grepl(patterns[1], .x))
+        furrr::future_map_lgl(strings, ~stringi::stri_detect_regex(.x, patterns[1]))
       } else {
+        # Use efficient vapply pattern matching per string
         res <- furrr::future_map(strings, function(s) {
-          sapply(patterns, function(p) grepl(p, s))
+          vapply(patterns, function(p) stringi::stri_detect_regex(s, p), logical(1))
         })
+        # Efficient row binding with pre-allocation
         do.call(rbind, res)
       }
     }),
@@ -213,7 +231,9 @@ get_engine_expression <- function(engine) {
       future::plan(future::multisession, workers = workers)
       on.exit(future::plan(future::sequential), add = TRUE)
       
-      res <- furrr::future_map(patterns, ~grepl(.x, strings))
+      # Pattern-parallel: each worker processes one pattern against all strings
+      res <- furrr::future_map(patterns, ~stringi::stri_detect_regex(strings, .x))
+      # Efficient column binding with pre-allocation
       do.call(cbind, res)
     }),
     

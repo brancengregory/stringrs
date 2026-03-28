@@ -49,10 +49,21 @@ plot_speedup_comparison <- function(all_results, output_dir) {
         scenario = sc_name,
         n_strings = sc_n_strings,
         n_patterns = sc_n_patterns,
+        workload_size = sc_n_strings * sc_n_patterns,
         speedup = if (!is.na(baseline)) baseline / median_ms else NA_real_,
         workload = sprintf("%s×%s", 
                           format(sc_n_strings, scientific = FALSE, big.mark = ","),
-                          format(sc_n_patterns, scientific = FALSE, big.mark = ","))
+                          format(sc_n_patterns, scientific = FALSE, big.mark = ",")),
+        # Ensure engine names are clean for display
+        engine_display = factor(engine, 
+                                levels = c("grepl", "stringr", "stringi", 
+                                          "mirai_string", "mirai_pattern",
+                                          "furrr_string", "furrr_pattern",
+                                          "stringrs_auto"),
+                                labels = c("R grepl", "R stringr", "R stringi",
+                                          "mirai (string)", "mirai (pattern)",
+                                          "furrr (string)", "furrr (pattern)",
+                                          "stringrs"))
       )
   })
   
@@ -61,28 +72,46 @@ plot_speedup_comparison <- function(all_results, output_dir) {
     return(NULL)
   }
   
-  # Create plot
-  p <- ggplot(data, aes(x = workload, y = speedup, fill = engine)) +
-    geom_bar(stat = "identity", position = "dodge") +
-    geom_hline(yintercept = 1, linetype = "dashed", color = "red", alpha = 0.7) +
+  # Order scenarios by workload size for logical display
+  scenario_order <- data %>%
+    distinct(scenario, workload_size) %>%
+    arrange(workload_size) %>%
+    pull(scenario)
+  
+  data$scenario <- factor(data$scenario, levels = scenario_order)
+  
+  # Create plot with facets by pattern count
+  p <- ggplot(data, aes(x = scenario, y = speedup, fill = engine_display)) +
+    geom_bar(stat = "identity", position = "dodge", color = "black", size = 0.2) +
+    geom_errorbar(aes(ymin = min_ms / median_ms * speedup, 
+                      ymax = max_ms / median_ms * speedup),
+                  position = position_dodge(width = 0.9),
+                  width = 0.25, alpha = 0.5) +
+    geom_hline(yintercept = 1, linetype = "dashed", color = "red", alpha = 0.7, size = 1) +
+    facet_wrap(~sprintf("%d patterns", n_patterns), scales = "free_x") +
     scale_y_log10(labels = comma_format()) +
+    scale_fill_brewer(palette = "Set2") +
     labs(
       title = "Speedup vs R base (grepl)",
-      subtitle = "Higher is better - red line shows baseline",
-      x = "Workload (strings × patterns)",
+      subtitle = "Higher is better - red line shows baseline | Error bars show min/max across iterations",
+      x = "Scenario",
       y = "Speedup factor (log scale)",
       fill = "Engine"
     ) +
     theme_minimal() +
     theme(
-      axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+      axis.text.x = element_text(angle = 45, hjust = 1, size = 7),
       legend.position = "bottom",
-      legend.text = element_text(size = 8)
+      legend.title = element_text(face = "bold"),
+      legend.text = element_text(size = 9),
+      strip.background = element_rect(fill = "lightgray", color = "black"),
+      strip.text = element_text(face = "bold", size = 10),
+      panel.spacing = unit(1, "lines")
     )
   
   # Save
   output_file <- file.path(output_dir, "01_speedup_comparison.png")
-  ggsave(output_file, p, width = 14, height = 8, dpi = 150)
+  ggsave(output_file, p, width = 16, height = 10, dpi = 150)
   cat(sprintf("  Saved: %s\n", output_file))
   
   invisible(p)
@@ -119,7 +148,17 @@ plot_throughput_comparison <- function(all_results, output_dir) {
         scenario = sc_name,
         n_strings = sc_n_strings,
         n_patterns = sc_n_patterns,
-        total_ops = sc_n_strings * sc_n_patterns
+        total_ops = sc_n_strings * sc_n_patterns,
+        # Clean engine names for display
+        engine_display = factor(engine, 
+                                levels = c("grepl", "stringr", "stringi", 
+                                          "mirai_string", "mirai_pattern",
+                                          "furrr_string", "furrr_pattern",
+                                          "stringrs_auto"),
+                                labels = c("R grepl", "R stringr", "R stringi",
+                                          "mirai (string)", "mirai (pattern)",
+                                          "furrr (string)", "furrr (pattern)",
+                                          "stringrs"))
       )
   })
   
@@ -128,20 +167,25 @@ plot_throughput_comparison <- function(all_results, output_dir) {
     return(NULL)
   }
   
-  # Create plot
-  p <- ggplot(data, aes(x = n_strings, y = throughput, color = engine, group = engine)) +
-    geom_line(linewidth = 1) +
-    geom_point(size = 2) +
-    facet_wrap(~n_patterns, scales = "free_y", labeller = label_both) +
+  # Ensure proper grouping by sorting by n_strings within each facet
+  data <- data %>%
+    arrange(n_patterns, engine_display, n_strings)
+  
+  # Create plot with explicit grouping to ensure lines connect properly
+  p <- ggplot(data, aes(x = n_strings, y = throughput, color = engine_display, group = engine_display)) +
+    geom_line(linewidth = 1.2, alpha = 0.8) +
+    geom_point(size = 3, alpha = 0.9) +
+    facet_wrap(~sprintf("%d patterns", n_patterns), scales = "free_y") +
     scale_x_log10(labels = comma_format()) +
     scale_y_log10(labels = function(x) {
       ifelse(x < 1000, sprintf("%.0f", x),
              ifelse(x < 1e6, sprintf("%.1fK", x / 1000),
                     sprintf("%.1fM", x / 1e6)))
     }) +
+    scale_color_brewer(palette = "Set2") +
     labs(
       title = "Throughput by Data Size",
-      subtitle = "Strings processed per second",
+      subtitle = "Strings processed per second - Points connected by engine within each pattern count",
       x = "Number of strings (log scale)",
       y = "Throughput (strings/sec, log scale)",
       color = "Engine"
@@ -149,13 +193,16 @@ plot_throughput_comparison <- function(all_results, output_dir) {
     theme_minimal() +
     theme(
       legend.position = "bottom",
-      strip.background = element_rect(fill = "lightgray"),
-      strip.text = element_text(face = "bold")
+      legend.title = element_text(face = "bold"),
+      legend.text = element_text(size = 9),
+      strip.background = element_rect(fill = "lightgray", color = "black"),
+      strip.text = element_text(face = "bold", size = 10),
+      panel.spacing = unit(1.5, "lines")
     )
   
   # Save
   output_file <- file.path(output_dir, "02_throughput_comparison.png")
-  ggsave(output_file, p, width = 14, height = 10, dpi = 150)
+  ggsave(output_file, p, width = 16, height = 12, dpi = 150)
   cat(sprintf("  Saved: %s\n", output_file))
   
   invisible(p)
@@ -184,12 +231,24 @@ plot_scaling_analysis <- function(all_results, output_dir) {
     
     sc_name <- sc$name
     sc_n_strings <- sc$n_strings
+    sc_n_patterns <- sc$n_patterns
     
     metrics %>%
       filter(success) %>%
       mutate(
         scenario = sc_name,
-        n_strings = sc_n_strings
+        n_strings = sc_n_strings,
+        n_patterns = sc_n_patterns,
+        # Clean engine names for display
+        engine_display = factor(engine, 
+                                levels = c("grepl", "stringr", "stringi", 
+                                          "mirai_string", "mirai_pattern",
+                                          "furrr_string", "furrr_pattern",
+                                          "stringrs_auto"),
+                                labels = c("R grepl", "R stringr", "R stringi",
+                                          "mirai (string)", "mirai (pattern)",
+                                          "furrr (string)", "furrr (pattern)",
+                                          "stringrs"))
       )
   })
   
@@ -198,9 +257,10 @@ plot_scaling_analysis <- function(all_results, output_dir) {
     return(NULL)
   }
   
+  # Sort by n_strings within each pattern/engine group for proper line ordering
   data <- data %>%
-    group_by(engine) %>%
-    arrange(n_strings) %>%
+    arrange(n_patterns, engine_display, n_strings) %>%
+    group_by(engine_display, n_patterns) %>%
     mutate(
       time_ratio = median_ms / first(median_ms),
       size_ratio = n_strings / first(n_strings),
@@ -208,23 +268,35 @@ plot_scaling_analysis <- function(all_results, output_dir) {
     ) %>%
     ungroup()
   
-  # Create plot
-  p <- ggplot(data, aes(x = size_ratio, y = time_ratio, color = engine)) +
-    geom_line(linewidth = 1) +
-    geom_point(size = 2) +
-    geom_abline(intercept = 0, slope = 1, linetype = "dashed", alpha = 0.5) +
+  # Create plot with facets by pattern count for clarity
+  p <- ggplot(data, aes(x = size_ratio, y = time_ratio, color = engine_display, group = engine_display)) +
+    geom_line(linewidth = 1.2, alpha = 0.8) +
+    geom_point(size = 3, alpha = 0.9) +
+    geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "red", alpha = 0.7, size = 1) +
+    geom_abline(intercept = 0, slope = 0.5, linetype = "dotted", color = "gray50", alpha = 0.5) +
+    geom_abline(intercept = 0, slope = 2, linetype = "dotted", color = "gray50", alpha = 0.5) +
+    facet_wrap(~sprintf("%d patterns", n_patterns), scales = "free") +
+    scale_color_brewer(palette = "Set2") +
     labs(
       title = "Scaling Efficiency",
-      subtitle = "Dashed line = perfect linear scaling",
-      x = "Data size ratio",
-      y = "Time ratio"
+      subtitle = "Red line = perfect linear scaling | Dotted lines = 0.5x and 2x scaling reference",
+      x = "Data size ratio (relative to smallest in group)",
+      y = "Time ratio (relative to fastest in group)",
+      color = "Engine"
     ) +
     theme_minimal() +
-    theme(legend.position = "bottom")
+    theme(
+      legend.position = "bottom",
+      legend.title = element_text(face = "bold"),
+      legend.text = element_text(size = 9),
+      strip.background = element_rect(fill = "lightgray", color = "black"),
+      strip.text = element_text(face = "bold", size = 10),
+      panel.spacing = unit(1.5, "lines")
+    )
   
   # Save
   output_file <- file.path(output_dir, "03_scaling_efficiency.png")
-  ggsave(output_file, p, width = 10, height = 6, dpi = 150)
+  ggsave(output_file, p, width = 16, height = 10, dpi = 150)
   cat(sprintf("  Saved: %s\n", output_file))
   
   invisible(p)
