@@ -1,0 +1,256 @@
+   0.213375785s  INFO prepare_target{force=false package_id=stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust) target="stringrs"}: cargo::core::compiler::fingerprint: fingerprint error for stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust)/Check { test: false }/TargetInner { ..: lib_target("stringrs", ["staticlib"], "/Users/brancengregory/code/brancengregory/stringrs/src/rust/src/lib.rs", Edition2021) }
+   0.213419868s  INFO prepare_target{force=false package_id=stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust) target="stringrs"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/brancengregory/code/brancengregory/stringrs/src/rust/target/debug/.fingerprint/stringrs-85d13de9e9e5f16c/lib-stringrs`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: <std::backtrace::Backtrace>::create
+   1: <std::backtrace::Backtrace>::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::compile
+   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   8: cargo::ops::cargo_compile::compile_ws
+   9: cargo::ops::cargo_compile::compile_with_exec
+  10: cargo::ops::cargo_compile::compile
+  11: cargo::commands::check::exec
+  12: <cargo::cli::Exec>::exec
+  13: cargo::main
+  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  15: std::rt::lang_start::<()>::{closure#0}
+  16: std::rt::lang_start_internal
+  17: _main
+  18: <unknown>
+   0.253031543s  INFO prepare_target{force=false package_id=extendr-api v0.6.0 target="extendr_api"}: cargo::core::compiler::fingerprint: fingerprint error for extendr-api v0.6.0/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("extendr_api", ["lib"], "/Users/brancengregory/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/extendr-api-0.6.0/src/lib.rs", Edition2021) }
+   0.253050927s  INFO prepare_target{force=false package_id=extendr-api v0.6.0 target="extendr_api"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/brancengregory/code/brancengregory/stringrs/src/rust/target/debug/.fingerprint/extendr-api-4932e9eb7fc978c1/lib-extendr_api`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: <std::backtrace::Backtrace>::create
+   1: <std::backtrace::Backtrace>::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::compile
+   7: cargo::core::compiler::compile
+   8: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   9: cargo::ops::cargo_compile::compile_ws
+  10: cargo::ops::cargo_compile::compile_with_exec
+  11: cargo::ops::cargo_compile::compile
+  12: cargo::commands::check::exec
+  13: <cargo::cli::Exec>::exec
+  14: cargo::main
+  15: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  16: std::rt::lang_start::<()>::{closure#0}
+  17: std::rt::lang_start_internal
+  18: _main
+  19: <unknown>
+   0.253543965s  INFO prepare_target{force=false package_id=extendr-api v0.6.0 target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint error for extendr-api v0.6.0/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "/Users/brancengregory/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/extendr-api-0.6.0/build.rs", Edition2021) }
+   0.253555800s  INFO prepare_target{force=false package_id=extendr-api v0.6.0 target="build-script-build"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/brancengregory/code/brancengregory/stringrs/src/rust/target/debug/.fingerprint/extendr-api-1833adc95b1c6f48/run-build-script-build-script-build`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: <std::backtrace::Backtrace>::create
+   1: <std::backtrace::Backtrace>::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::custom_build::build_work
+   7: cargo::core::compiler::compile
+   8: cargo::core::compiler::compile
+   9: cargo::core::compiler::compile
+  10: <cargo::core::compiler::build_runner::BuildRunner>::compile
+  11: cargo::ops::cargo_compile::compile_ws
+  12: cargo::ops::cargo_compile::compile_with_exec
+  13: cargo::ops::cargo_compile::compile
+  14: cargo::commands::check::exec
+  15: <cargo::cli::Exec>::exec
+  16: cargo::main
+  17: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  18: std::rt::lang_start::<()>::{closure#0}
+  19: std::rt::lang_start_internal
+  20: _main
+  21: <unknown>
+   0.253890711s  INFO prepare_target{force=false package_id=libR-sys v0.6.0 target="build-script-build"}: cargo::core::compiler::fingerprint: fingerprint error for libR-sys v0.6.0/RunCustomBuild/TargetInner { ..: custom_build_target("build-script-build", "/Users/brancengregory/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libR-sys-0.6.0/build.rs", Edition2021) }
+   0.253901518s  INFO prepare_target{force=false package_id=libR-sys v0.6.0 target="build-script-build"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/brancengregory/code/brancengregory/stringrs/src/rust/target/debug/.fingerprint/libR-sys-a822b1028844119b/run-build-script-build-script-build`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: <std::backtrace::Backtrace>::create
+   1: <std::backtrace::Backtrace>::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::custom_build::build_work
+   7: cargo::core::compiler::compile
+   8: cargo::core::compiler::compile
+   9: cargo::core::compiler::compile
+  10: cargo::core::compiler::compile
+  11: <cargo::core::compiler::build_runner::BuildRunner>::compile
+  12: cargo::ops::cargo_compile::compile_ws
+  13: cargo::ops::cargo_compile::compile_with_exec
+  14: cargo::ops::cargo_compile::compile
+  15: cargo::commands::check::exec
+  16: <cargo::cli::Exec>::exec
+  17: cargo::main
+  18: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  19: std::rt::lang_start::<()>::{closure#0}
+  20: std::rt::lang_start_internal
+  21: _main
+  22: <unknown>
+   0.254428270s  INFO prepare_target{force=false package_id=libR-sys v0.6.0 target="libR_sys"}: cargo::core::compiler::fingerprint: fingerprint error for libR-sys v0.6.0/Check { test: false }/TargetInner { name_inferred: true, ..: lib_target("libR_sys", ["lib"], "/Users/brancengregory/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/libR-sys-0.6.0/src/lib.rs", Edition2021) }
+   0.254443065s  INFO prepare_target{force=false package_id=libR-sys v0.6.0 target="libR_sys"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/brancengregory/code/brancengregory/stringrs/src/rust/target/debug/.fingerprint/libR-sys-0fa979d9384e9924/lib-libR_sys`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: <std::backtrace::Backtrace>::create
+   1: <std::backtrace::Backtrace>::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::compile
+   7: cargo::core::compiler::compile
+   8: cargo::core::compiler::compile
+   9: <cargo::core::compiler::build_runner::BuildRunner>::compile
+  10: cargo::ops::cargo_compile::compile_ws
+  11: cargo::ops::cargo_compile::compile_with_exec
+  12: cargo::ops::cargo_compile::compile
+  13: cargo::commands::check::exec
+  14: <cargo::cli::Exec>::exec
+  15: cargo::main
+  16: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  17: std::rt::lang_start::<()>::{closure#0}
+  18: std::rt::lang_start_internal
+  19: _main
+  20: <unknown>
+   0.285483419s  INFO prepare_target{force=false package_id=stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust) target="stringrs"}: cargo::core::compiler::fingerprint: fingerprint error for stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust)/Check { test: true }/TargetInner { ..: lib_target("stringrs", ["staticlib"], "/Users/brancengregory/code/brancengregory/stringrs/src/rust/src/lib.rs", Edition2021) }
+   0.285507752s  INFO prepare_target{force=false package_id=stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust) target="stringrs"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/brancengregory/code/brancengregory/stringrs/src/rust/target/debug/.fingerprint/stringrs-2c56435fd49d15f3/test-lib-stringrs`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: <std::backtrace::Backtrace>::create
+   1: <std::backtrace::Backtrace>::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::compile
+   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   8: cargo::ops::cargo_compile::compile_ws
+   9: cargo::ops::cargo_compile::compile_with_exec
+  10: cargo::ops::cargo_compile::compile
+  11: cargo::commands::check::exec
+  12: <cargo::cli::Exec>::exec
+  13: cargo::main
+  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  15: std::rt::lang_start::<()>::{closure#0}
+  16: std::rt::lang_start_internal
+  17: _main
+  18: <unknown>
+   0.307706757s  INFO prepare_target{force=false package_id=stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust) target="cache_behavior"}: cargo::core::compiler::fingerprint: fingerprint error for stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust)/Check { test: true }/TargetInner { kind: "bench", name: "cache_behavior", tested: false, harness: false, ..: with_path("/Users/brancengregory/code/brancengregory/stringrs/src/rust/benches/cache_behavior.rs", Edition2021) }
+   0.307731590s  INFO prepare_target{force=false package_id=stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust) target="cache_behavior"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/brancengregory/code/brancengregory/stringrs/src/rust/target/debug/.fingerprint/stringrs-d7473374e1d2aba7/test-bench-cache_behavior`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: <std::backtrace::Backtrace>::create
+   1: <std::backtrace::Backtrace>::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::compile
+   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   8: cargo::ops::cargo_compile::compile_ws
+   9: cargo::ops::cargo_compile::compile_with_exec
+  10: cargo::ops::cargo_compile::compile
+  11: cargo::commands::check::exec
+  12: <cargo::cli::Exec>::exec
+  13: cargo::main
+  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  15: std::rt::lang_start::<()>::{closure#0}
+  16: std::rt::lang_start_internal
+  17: _main
+  18: <unknown>
+   0.308917259s  INFO prepare_target{force=false package_id=stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust) target="parallel_scaling"}: cargo::core::compiler::fingerprint: fingerprint error for stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust)/Check { test: true }/TargetInner { kind: "bench", name: "parallel_scaling", tested: false, harness: false, ..: with_path("/Users/brancengregory/code/brancengregory/stringrs/src/rust/benches/parallel_scaling.rs", Edition2021) }
+   0.308932390s  INFO prepare_target{force=false package_id=stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust) target="parallel_scaling"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/brancengregory/code/brancengregory/stringrs/src/rust/target/debug/.fingerprint/stringrs-ee030b62c25c40fb/test-bench-parallel_scaling`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: <std::backtrace::Backtrace>::create
+   1: <std::backtrace::Backtrace>::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::compile
+   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   8: cargo::ops::cargo_compile::compile_ws
+   9: cargo::ops::cargo_compile::compile_with_exec
+  10: cargo::ops::cargo_compile::compile
+  11: cargo::commands::check::exec
+  12: <cargo::cli::Exec>::exec
+  13: cargo::main
+  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  15: std::rt::lang_start::<()>::{closure#0}
+  16: std::rt::lang_start_internal
+  17: _main
+  18: <unknown>
+   0.309809950s  INFO prepare_target{force=false package_id=stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust) target="regex_ops"}: cargo::core::compiler::fingerprint: fingerprint error for stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust)/Check { test: true }/TargetInner { kind: "bench", name: "regex_ops", tested: false, harness: false, ..: with_path("/Users/brancengregory/code/brancengregory/stringrs/src/rust/benches/regex_ops.rs", Edition2021) }
+   0.309823561s  INFO prepare_target{force=false package_id=stringrs v0.1.0 (/Users/brancengregory/code/brancengregory/stringrs/src/rust) target="regex_ops"}: cargo::core::compiler::fingerprint:     err: failed to read `/Users/brancengregory/code/brancengregory/stringrs/src/rust/target/debug/.fingerprint/stringrs-3c7a19a76917eddb/test-bench-regex_ops`
+
+Caused by:
+    No such file or directory (os error 2)
+
+Stack backtrace:
+   0: <std::backtrace::Backtrace>::create
+   1: <std::backtrace::Backtrace>::capture
+   2: cargo_util::paths::read_bytes
+   3: cargo_util::paths::read
+   4: cargo::core::compiler::fingerprint::_compare_old_fingerprint
+   5: cargo::core::compiler::fingerprint::prepare_target
+   6: cargo::core::compiler::compile
+   7: <cargo::core::compiler::build_runner::BuildRunner>::compile
+   8: cargo::ops::cargo_compile::compile_ws
+   9: cargo::ops::cargo_compile::compile_with_exec
+  10: cargo::ops::cargo_compile::compile
+  11: cargo::commands::check::exec
+  12: <cargo::cli::Exec>::exec
+  13: cargo::main
+  14: std::sys::backtrace::__rust_begin_short_backtrace::<fn(), ()>
+  15: std::rt::lang_start::<()>::{closure#0}
+  16: std::rt::lang_start_internal
+  17: _main
+  18: <unknown>
+   Compiling libR-sys v0.6.0
+error: failed to run custom build command for `libR-sys v0.6.0`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  process didn't exit successfully: `/Users/brancengregory/code/brancengregory/stringrs/src/rust/target/debug/build/libR-sys-382155bd9c8b5836/build-script-build` (exit status: 1)
+  --- stdout
+  > Error in loadNamespace(x) : there is no package called ‘rlang’
+  Calls: loadNamespace -> withRestarts -> withOneRestart -> doWithOneRestart
+  Execution halted
+
+  Problem locating local R install: Custom { kind: Other, error: "Cannot find R include." }

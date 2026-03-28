@@ -1,1 +1,23 @@
 .Rproj.user
+
+# Benchmark results (keep directory but not contents)
+benchmark/results/*
+!benchmark/results/.gitkeep
+!benchmark/results/README.md
+
+# Rust build artifacts (in source tree)
+src/rust/target/
+*.a
+*.o
+*.so
+
+# Temporary files
+*.rds
+*.json
+!benchmark/results/*.json  # Only in results dir (but excluded above)
+
+# Profiling output
+*.svg
+flamegraph*
+*.pb
+heaptrack*

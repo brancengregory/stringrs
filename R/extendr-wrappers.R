@@ -6,12 +6,28 @@
 # This file was created with the following call:
 #   .Call("wrap__make_stringrs_wrappers", use_symbols = TRUE, package_name = "stringrs")
 
-#' @docType _PACKAGE
+#' @docType package
 #' @usage NULL
 #' @useDynLib stringrs, .registration = TRUE
 NULL
 
-r_string_detect <- function(s, pattern) .Call(wrap__r_string_detect, s, pattern)
+# Internal low-level Rust functions
+# These are wrapped by string_detect() - do not call directly
+
+#' @keywords internal
+r_string_detect_regex_cached <- function(strings, pattern, parallel) .Call(wrap__r_string_detect_regex_cached, strings, pattern, parallel)
+
+#' @keywords internal
+r_string_detect_fancy_cached <- function(strings, pattern, parallel) .Call(wrap__r_string_detect_fancy_cached, strings, pattern, parallel)
+
+#' @keywords internal
+r_string_detect_multi_regex_optimized <- function(strings, patterns, parallel_strategy, chunk_size) .Call(wrap__r_string_detect_multi_regex_optimized, strings, patterns, parallel_strategy, chunk_size)
+
+#' @keywords internal
+r_string_detect_multi_fancy_optimized <- function(strings, patterns, parallel_strategy, chunk_size) .Call(wrap__r_string_detect_multi_fancy_optimized, strings, patterns, parallel_strategy, chunk_size)
+
+#' @keywords internal
+r_string_detect_chunked <- function(strings, patterns, chunk_size) .Call(wrap__r_string_detect_chunked, strings, patterns, chunk_size)
 
 
 # nolint end
