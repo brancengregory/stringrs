@@ -1,7 +1,7 @@
+use dashmap::DashMap;
 use extendr_api::prelude::*;
 use rayon::prelude::*;
-use std::collections::HashMap;
-use std::sync::{Arc, LazyLock, Mutex};
+use std::sync::{Arc, LazyLock};
 
 // Import engines
 use fancy_regex::Regex as FancyRegex;
@@ -30,24 +30,22 @@ fn init_dhat() {
 #[cfg(not(feature = "profile-memory"))]
 fn init_dhat() {}
 
-// Global regex cache using LazyLock for thread-safe initialization
-static REGEX_CACHE: LazyLock<Mutex<HashMap<String, RegexCrate>>> =
-    LazyLock::new(|| Mutex::new(HashMap::new()));
+// Global regex cache using DashMap for lock-free concurrent access
+static REGEX_CACHE: LazyLock<DashMap<String, RegexCrate>> = LazyLock::new(|| DashMap::new());
 
-static FANCY_CACHE: LazyLock<Mutex<HashMap<String, FancyRegex>>> =
-    LazyLock::new(|| Mutex::new(HashMap::new()));
+static FANCY_CACHE: LazyLock<DashMap<String, FancyRegex>> = LazyLock::new(|| DashMap::new());
 
 /// Get or compile standard regex from cache
 ///
-/// This function first checks the global cache for a pre-compiled regex.
-/// If not found, it compiles the pattern, stores it in the cache, and returns it.
+/// This function uses DashMap for lock-free concurrent access to the cache.
+/// If the pattern is not cached, it compiles and stores it atomically.
 ///
 /// # Arguments
 /// * `pattern` - The regex pattern string
 ///
 /// # Returns
 /// * `Ok(RegexCrate)` - The compiled regex
-/// * `Err(Error)` - If pattern compilation fails or cache lock is poisoned
+/// * `Err(Error)` - If pattern compilation fails
 ///
 /// # Examples
 /// ```rust,ignore
@@ -55,66 +53,47 @@ static FANCY_CACHE: LazyLock<Mutex<HashMap<String, FancyRegex>>> =
 /// assert!(re.is_match("hello"));
 /// ```
 fn get_cached_regex(pattern: &str) -> extendr_api::Result<RegexCrate> {
-    // First check cache
-    {
-        let cache = REGEX_CACHE
-            .lock()
-            .map_err(|_| Error::Other("Regex cache lock poisoned".to_string()))?;
-        if let Some(re) = cache.get(pattern) {
-            return Ok(re.clone());
+    // DashMap entry API: lock-free read, only lock on write
+    let entry = REGEX_CACHE.entry(pattern.to_string());
+
+    match entry {
+        dashmap::mapref::entry::Entry::Occupied(e) => Ok(e.get().clone()),
+        dashmap::mapref::entry::Entry::Vacant(e) => {
+            let re = RegexCrate::new(pattern).map_err(|err| {
+                Error::Other(format!(
+                    "Failed to compile regex pattern '{}': {}",
+                    pattern, err
+                ))
+            })?;
+            e.insert(re.clone());
+            Ok(re)
         }
     }
-
-    // Not in cache, compile and store
-    let re = RegexCrate::new(pattern).map_err(|e| {
-        Error::Other(format!(
-            "Failed to compile regex pattern '{}': {}",
-            pattern, e
-        ))
-    })?;
-
-    {
-        let mut cache = REGEX_CACHE
-            .lock()
-            .map_err(|_| Error::Other("Regex cache lock poisoned".to_string()))?;
-        cache.insert(pattern.to_string(), re.clone());
-    }
-
-    Ok(re)
 }
 
 /// Get or compile fancy regex from cache
 fn get_cached_fancy(pattern: &str) -> extendr_api::Result<FancyRegex> {
-    {
-        let cache = FANCY_CACHE
-            .lock()
-            .map_err(|_| Error::Other("Fancy-regex cache lock poisoned".to_string()))?;
-        if let Some(re) = cache.get(pattern) {
-            return Ok(re.clone());
+    let entry = FANCY_CACHE.entry(pattern.to_string());
+
+    match entry {
+        dashmap::mapref::entry::Entry::Occupied(e) => Ok(e.get().clone()),
+        dashmap::mapref::entry::Entry::Vacant(e) => {
+            let re = FancyRegex::new(pattern).map_err(|err| {
+                Error::Other(format!(
+                    "Failed to compile fancy-regex pattern '{}': {}",
+                    pattern, err
+                ))
+            })?;
+            e.insert(re.clone());
+            Ok(re)
         }
     }
-
-    let re = FancyRegex::new(pattern).map_err(|e| {
-        Error::Other(format!(
-            "Failed to compile fancy-regex pattern '{}': {}",
-            pattern, e
-        ))
-    })?;
-
-    {
-        let mut cache = FANCY_CACHE
-            .lock()
-            .map_err(|_| Error::Other("Fancy-regex cache lock poisoned".to_string()))?;
-        cache.insert(pattern.to_string(), re.clone());
-    }
-
-    Ok(re)
 }
 
 /// Single pattern regex detection with caching and parallel processing
 ///
 /// Detects matches of a single regex pattern across multiple strings.
-/// Uses thread-local regex compilation in parallel mode to avoid cache contention.
+/// Uses DashMap for lock-free concurrent cache access.
 ///
 /// # Arguments
 /// * `strings` - Vector of strings to search
@@ -126,8 +105,8 @@ fn get_cached_fancy(pattern: &str) -> extendr_api::Result<FancyRegex> {
 /// * `Err(Error)` - If pattern compilation fails
 ///
 /// # Performance
-/// - Uses global regex cache for pattern reuse
-/// - Thread-local instances in parallel mode for zero contention
+/// - Uses DashMap for lock-free concurrent cache access
+/// - No per-thread compilation overhead in parallel mode
 /// - Sequential mode for small datasets (<100 strings)
 ///
 /// # Examples
@@ -146,20 +125,12 @@ pub fn r_string_detect_regex_cached(
     // Initialize DHAT profiler if memory profiling is enabled
     init_dhat();
 
+    // DashMap allows concurrent reads without locking
     let regex = get_cached_regex(&pattern)?;
 
     if parallel && strings.len() > 100 {
-        // Parallel processing - compile regex per thread to avoid contention
-        let results: Vec<bool> = strings
-            .par_iter()
-            .map(|s| {
-                // Each thread compiles its own copy of the regex
-                // This avoids cache contention at the cost of extra compilation
-                // For single-pattern matching, this is acceptable
-                let re = RegexCrate::new(&pattern).ok();
-                re.map(|r| r.is_match(s)).unwrap_or(false)
-            })
-            .collect();
+        // Parallel processing with shared cache (no per-thread compile)
+        let results: Vec<bool> = strings.par_iter().map(|s| regex.is_match(s)).collect();
 
         Ok(Logicals::from_values(
             results.iter().map(|&b| Rbool::from(b)),
@@ -372,17 +343,14 @@ pub fn r_string_detect_fancy_cached(
     pattern: String,
     parallel: bool,
 ) -> extendr_api::Result<Logicals> {
+    // DashMap allows concurrent reads without locking
     let regex = get_cached_fancy(&pattern)?;
 
     if parallel && strings.len() > 100 {
-        // Parallel processing - compile regex per thread to avoid contention
+        // Parallel processing with shared cache (no per-thread compile)
         let results: Vec<bool> = strings
             .par_iter()
-            .map(|s| {
-                // Each thread compiles its own copy of the fancy-regex
-                let re = FancyRegex::new(&pattern).ok();
-                re.map(|r| r.is_match(s).unwrap_or(false)).unwrap_or(false)
-            })
+            .map(|s| regex.is_match(s).unwrap_or(false))
             .collect();
 
         Ok(Logicals::from_values(
